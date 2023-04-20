@@ -1,11 +1,11 @@
 import { Controller, Get } from '@nestjs/common';
-import { BinPackingService } from './bin-packing.service';
+import { BinPackingService2 } from './bin-packing.service';
 import { Product } from '../product';
 import { Package } from '../package';
 
-@Controller('bin-packing')
-export class BinPackingController {
-  constructor(private readonly binPackingService: BinPackingService) {}
+@Controller('bin-packing-2')
+export class BinPackingController2 {
+  constructor(private readonly binPackingService: BinPackingService2) {}
 
   @Get()
   solve(): string {
