@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
-import { BinPackingService2 } from './bin-packing.service';
 import { Product } from '../product';
 import { Package } from '../package';
+import { BinPackingService2 } from './bin-packing.service';
 
 @Controller('bin-packing-2')
 export class BinPackingController2 {
@@ -13,8 +13,9 @@ export class BinPackingController2 {
       new Product(1, 5, 10, 5, 15),
       new Product(2, 7, 20, 10, 10),
       new Product(3, 3, 15, 5, 10),
-      new Product(4, 9, 5, 10, 15),
-      new Product(5, 11, 25, 5, 10),
+      new Product(4, 5, 10, 5, 15),
+      new Product(5, 7, 20, 10, 10),
+      new Product(6, 3, 15, 5, 10),
     ];
 
     const packages: Package[] = [
@@ -28,10 +29,14 @@ export class BinPackingController2 {
     );
 
     let result = 'Alocação de produtos em embalagens:\n';
+    let volumeIndex = 1;
     packageProductMap.forEach((allocatedProducts, currentPackage) => {
-      result += `Pacote ${currentPackage.id}: [${allocatedProducts
+      result += `Volume ${volumeIndex}: Pacote tipo ${
+        currentPackage.id
+      }: [${allocatedProducts
         .map((product) => `Produto ${product.id}`)
         .join(', ')}]\n`;
+      volumeIndex++;
     });
 
     return result;

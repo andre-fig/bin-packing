@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Product } from '../product';
-import { Package } from '../package';
+import { Package } from 'src/package';
+import { Product } from 'src/product';
 
 @Injectable()
 export class BinPackingService2 {
@@ -11,56 +11,68 @@ export class BinPackingService2 {
     const sortedProducts = products.sort(
       (a, b) => b.width * b.height * b.length - a.width * a.height * a.length,
     );
+
     const packageProductMap = new Map<Package, Product[]>();
 
     for (const product of sortedProducts) {
-      let productPlaced = false;
+      let bestFitPackage: Package | null = null;
+      let bestFitProducts: Product[] | null = null;
+      let minWastedSpace = Number.MAX_VALUE;
 
-      // Itera sobre as embalagens existentes tentando alocar o produto
-      for (const [
-        currentPackage,
-        currentProducts,
-      ] of packageProductMap.entries()) {
+      for (const currentPackage of packages) {
+        const currentProducts = packageProductMap.get(currentPackage) || [];
+
         const totalWeight = currentProducts.reduce(
           (acc, p) => acc + p.weight,
           0,
         );
+        const totalVolume = currentProducts.reduce(
+          (acc, p) => acc + p.width * p.height * p.length,
+          0,
+        );
+
+        const remainingWeight = currentPackage.maxWeight - totalWeight;
+        const remainingVolume =
+          currentPackage.width * currentPackage.height * currentPackage.length -
+          totalVolume;
 
         if (
-          currentPackage.maxWeight >= totalWeight + product.weight &&
+          remainingWeight >= product.weight &&
           currentPackage.width >= product.width &&
           currentPackage.height >= product.height &&
-          currentPackage.length >= product.length
+          currentPackage.length >= product.length &&
+          remainingVolume - product.width * product.height * product.length <
+            minWastedSpace
         ) {
-          currentProducts.push(product);
-          packageProductMap.set(currentPackage, currentProducts);
-          productPlaced = true;
-          break;
+          bestFitPackage = currentPackage;
+          bestFitProducts = currentProducts;
+          minWastedSpace =
+            remainingVolume - product.width * product.height * product.length;
         }
       }
 
-      // Se o produto ainda não foi alocado, cria uma nova embalagem e aloca o produto
-      if (!productPlaced) {
-        const suitablePackage = packages.find(
-          (pkg) =>
-            pkg.maxWeight >= product.weight &&
-            pkg.width >= product.width &&
-            pkg.height >= product.height &&
-            pkg.length >= product.length,
-        );
+      if (bestFitPackage && bestFitProducts) {
+        bestFitProducts.push(product);
+        packageProductMap.set(bestFitPackage, bestFitProducts);
+      } else {
+        // Encontre o pacote com menor espaço desperdiçado e adicione uma nova instância desse pacote ao array de pacotes
+        const minWastePackage = packages.reduce((min, pkg) => {
+          const pkgWastedSpace =
+            pkg.width * pkg.height * pkg.length -
+            product.width * product.height * product.length;
+          return pkgWastedSpace < minWastedSpace ? pkg : min;
+        }, packages[0]);
 
-        if (suitablePackage) {
-          const newPackage = new Package(
-            packageProductMap.size + 1,
-            suitablePackage.maxWeight,
-            suitablePackage.width,
-            suitablePackage.height,
-            suitablePackage.length,
-          );
-          packageProductMap.set(newPackage, [product]);
-        } else {
-          throw new Error(`Não foi possível alocar o produto ${product.id}`);
-        }
+        const newPackageInstance = new Package(
+          minWastePackage.id,
+          minWastePackage.maxWeight,
+          minWastePackage.width,
+          minWastePackage.height,
+          minWastePackage.length,
+        );
+        packages.push(newPackageInstance);
+
+        packageProductMap.set(newPackageInstance, [product]);
       }
     }
 

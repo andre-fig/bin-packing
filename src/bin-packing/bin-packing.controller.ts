@@ -13,8 +13,9 @@ export class BinPackingController {
       new Product(1, 5, 10, 5, 15),
       new Product(2, 7, 20, 10, 10),
       new Product(3, 3, 15, 5, 10),
-      new Product(4, 9, 5, 10, 15),
-      new Product(5, 11, 25, 5, 10),
+      new Product(4, 5, 10, 5, 15),
+      new Product(5, 7, 20, 10, 10),
+      new Product(6, 3, 15, 5, 10),
     ];
 
     const packages: Package[] = [
